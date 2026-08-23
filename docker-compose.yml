@@ -1,0 +1,13 @@
+services:
+  priceparcer:
+    build:
+      context: .
+    container_name: priceparcer
+    ports:
+      - "8000:8000"
+    environment:
+      HEADLESS: "1"
+    shm_size: "1gb"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs

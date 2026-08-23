@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+jinja2
+beautifulsoup4
+lxml
+httpx
+undetected-chromedriver
+selenium
+setuptools
+python-multipart

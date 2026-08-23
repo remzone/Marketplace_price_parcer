@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>Парсер маркетплейсов</title>
+    <link rel="stylesheet" href="/frontend/styles.css" />
+</head>
+<body>
+    <h1>Парсер маркетплейсов ({{ marketplace|capitalize if marketplace else 'Odyssey' }})</h1>
+
+    <!-- 🔎 Основной поиск -->
+    <form method="post" action="/search" id="search-form">
+        <label>Введите запрос:</label>
+        <input type="text" name="query" value="{{ query if query else '' }}" required />
+        <select name="search_type" id="search_type_select">
+            <option value="name" {% if search_type == 'name' %}selected{% endif %}>По названию</option>
+            <option value="article" {% if search_type == 'article' %}selected{% endif %}>По артикулу</option>
+        </select>
+        <select name="marketplace" id="marketplace-select">
+            <option value="ozon" {% if marketplace == 'ozon' %}selected{% endif %}>Ozon</option>
+            <option value="wildberries" {% if marketplace == 'wildberries' %}selected{% endif %}>Wildberries</option>
+            <option value="yandex" {% if marketplace == 'yandex' %}selected{% endif %}>Yandex Market</option>
+        </select>
+
+        <div id="all-markets-container" style="margin-top: 10px;">
+            <label>
+                <input type="checkbox" name="search_all" id="search_all_checkbox" disabled /> Искать на всех площадках
+            </label>
+        </div>
+
+        <button type="submit" id="submit-btn" class="btn-primary">Поиск</button>
+    </form>
+
+    <!-- 🔗 Новый блок: Поиск по ссылке -->
+    <h2 style="margin-top: 30px;">Или ввести ссылку напрямую</h2>
+    <form method="post" action="/search" id="link-search-form" style="margin-top: 10px;">
+        <input type="hidden" name="search_type" value="link" />
+        <label>Ссылка на товар:</label>
+        <input type="text" name="query" placeholder="https://..." required style="width: 500px;" />
+        <select name="marketplace">
+            <option value="ozon">Ozon</option>
+            <option value="wildberries">Wildberries</option>
+            <option value="yandex">Yandex Market</option>
+        </select>
+        <button type="submit" class="btn-primary">Парсить по ссылке</button>
+    </form>
+
+    <button type="button" id="reload-last" class="btn-primary">
+        Загрузить старый поиск
+    </button>
+
+    <div class="loader" id="loader" style="display:none;">
+        <span class="spinner"></span> Идёт поиск...
+    </div>
+
+    {% if results %}
+        <h2>Результаты для: "{{ query }}"</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Маркетплейс</th>
+                    <th>Название</th>
+                    <th>Артикул</th>
+                    <th>Цена без карты</th>
+                    <th>Цена с картой</th>
+                    <th>Цена до скидки</th>
+                    <th>Продавец</th>
+                    <th>Ссылка</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for res in results %}
+                <tr>
+                    <td>{{ res.marketplace }}</td>
+                    <td>{{ res.name }}</td>
+                    <td>{{ res.article }}</td>
+                    <td>{{ res.price_without_card }}</td>
+                    <td>{{ res.price_with_card }}</td>
+                    <td>{{ res.price_before_discount }}</td>
+                    <td>{{ res.seller }}</td>
+                    <td><a href="{{ res.link }}" target="_blank">Перейти</a></td>
+                </tr>
+                {% if res.characteristics and res.characteristics|length > 0 %}
+                <tr>
+                    <td colspan="8">
+                        <button type="button" class="toggle-btn" onclick="toggleChars('chars-{{ loop.index }}')">
+                            Показать характеристики
+                        </button>
+                        <div id="chars-{{ loop.index }}" style="display:none;">
+                            <table class="characteristics-table">
+                                <thead>
+                                    <tr>
+                                        <th>Название (RU)</th>
+                                        <th>Значение</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {% for key, value in res.characteristics.items() %}
+                                    <tr>
+                                        <td>{{ key }}</td>
+                                        <td>{{ value }}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </td>
+                </tr>
+                {% endif %}
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+    <!-- 🔥 Кнопка для перехода к документации -->
+    <div style="margin-top: 40px; text-align: center;">
+        <a href="/frontend/docs.html" class="btn-primary" style="text-decoration: none;">📄 Читать документацию API</a>
+    </div>
+
+    <script src="/frontend/scripts.js"></script>
+</body>
+</html>
